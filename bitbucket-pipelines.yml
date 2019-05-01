@@ -1,0 +1,53 @@
+# This project uses the GitFlo Workflow as defined here
+#   https://www.atlassian.com/git/tutorial/comparing-workflows#GitFlow-workflow
+image: softinstigate/maven-aws
+clone:           # the 'clone' sectio
+  depth: 1       # the depth, in this  case the clone will contain last one commits
+
+pipelines:
+  default:
+    - step:
+        script:
+          - echo "Please use a GitFlow branch"
+          - exit 1;
+  branches:
+    developer:
+      - step:
+          name: build the source code and push into aws-ecr
+          caches:
+            - maven
+          script:
+            - export TARGET_ENV=cndev
+            - echo "developer branch"
+            - cd ci
+            - . ci-0-set-properties.sh
+            - . ci-1-build-project.sh
+           
+            - cd ci
+            - . ci-2-aws-image.sh
+
+            - . ci-3-aws-push-image.sh
+
+    master:
+      - step:
+          name: build the source code and push into aws-ecr
+          caches:
+            - maven
+          script:
+            - export TARGET_ENV=cnprod
+            - echo "Master branch"
+            - cd ci
+            - . ci-0-set-properties.sh
+            - . ci-1-build-project.sh
+            - cd ci
+         
+           
+            - . ci-2-aws-image.sh
+
+            - . ci-3-aws-push-image.sh        
+
+
+
+
+options:
+  docker: true

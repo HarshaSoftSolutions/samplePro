@@ -1,0 +1,70 @@
+server:
+  port: ${PORT:8761}
+logging:
+  file: /java/CN_LOGS/discovery-server/discovery-server.log
+info:
+  component: Discovery Server
+eureka:
+  client:
+    registryFetchIntervalSeconds: 5
+    registerWithEureka: false
+    serviceUrl:
+      defaultZone: ${DISCOVERY_URL:http://localhost:8761}/eureka/
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    hostname: localhost
+    non-secure-port: ${server.port}
+    securePort: ${server.port}
+    securePortEnabled: false
+    nonSecurePortEnabled: false
+  server:
+    # Set this only for this sample service without which starting the instance will by default wait for the default of 5 mins
+    waitTimeInMsWhenSyncEmpty: 0
+    # Disable self-preservation during development, see https://github.com/Netflix/eureka/wiki/Understanding-Eureka-Peer-to-Peer-Communication
+    enable-self-preservation: false
+    # for the example, set this to zero as we will not have peers to sync up with.
+    # Do not set in a real environment with multi-node eureka clusters.
+    numberRegistrySyncRetries: 0
+turbine:
+  app-config: CONFIG-SERVER,EDGE-SERVER
+  clusterNameExpression: new String("default")
+management:
+  security:
+    enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: hystrix.stream
+mail.smtp.starttls.enable: true
+security:
+  basic:
+    enabled: true
+    path: ${management.context-path}/**
+  user:
+    name: admin
+    password: changeit
+    role: ${management.security.role}
+  sessions: ${management.security.sessions}
+spring:
+  boot:
+    admin:
+      context-path: /admin  #A different context path for Spring boot admin server has been provided avoiding conflict with eureka
+---
+spring.profiles: ssl
+server:
+  ssl:
+    key-store: /ssl_keystore.keystore
+    key-store-password: changeit
+eureka:
+  instance:
+   securePortEnabled: false
+   nonSecurePortEnabled: false
+---
+spring.profiles: docker
+spring:
+  boot:
+    admin:
+      context-path: /admin
+eureka:
+  instance:
+    prefer-ip-address: true
